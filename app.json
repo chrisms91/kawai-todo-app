@@ -1,7 +1,8 @@
 {
   "expo": {
-    "name": "kawai-todo-app",
+    "name": "Kawai Todo",
     "slug": "kawai-todo-app",
+    "description": "Kawai Todo App made with React Native",
     "privacy": "public",
     "sdkVersion": "33.0.0",
     "platforms": [
