@@ -11,19 +11,25 @@ import {
 } from 'react-native';
 import { AppLoading } from 'expo';
 import Todo from './Todo';
+import uuidv1 from 'uuid/v1';
+// import console = require('console');
 
 const { height, width } = Dimensions.get('window');
 
 export default class App extends React.Component {
   state = {
-    newTodo: '',
-    loadedToDos: false
+    newToDo: '',
+    loadedToDos: false,
+    toDos: {}
   };
 
-  componentDidMount = () => {};
+  componentDidMount = () => {
+    this._loadToDos();
+  };
 
   render() {
-    const { newTodo, loadedToDos } = this.state;
+    const { newToDo, loadedToDos, toDos } = this.state;
+    console.log(toDos);
     if (!loadedToDos) {
       return <AppLoading />;
     }
@@ -36,26 +42,73 @@ export default class App extends React.Component {
             style={styles.input}
             placeholder={'New To Do'}
             placeholderTextColor={'#999'}
-            value={newTodo}
-            onChangeText={this._controlNewTodo}
+            value={newToDo}
+            onChangeText={this._controlNewToDo}
             returnKeyType={'done'}
             autoCorrect={false}
+            onSubmitEditing={this._addToDo}
           />
+          {/* {...toDo} expands all the object properties as props */}
           <ScrollView contentContainerStyle={styles.todos}>
-            <Todo text={"Hello I'm a To Do"} />
+            {Object.values(toDos).map(toDo => (
+              <Todo key={toDo.id} {...toDo} deleteToDo={this._deleteToDo} />
+            ))}
           </ScrollView>
         </View>
       </View>
     );
   }
 
-  _controlNewTodo = text => {
+  _controlNewToDo = text => {
     this.setState({
-      newTodo: text
+      newToDo: text
     });
   };
 
-  _loadToDos = () => {};
+  _loadToDos = () => {
+    this.setState({
+      loadedToDos: true
+    });
+  };
+
+  _addToDo = () => {
+    const { newToDo } = this.state;
+    if (newToDo !== '') {
+      // using objects instead of array since it is more simple to modify list of todos.
+      this.setState(prevState => {
+        const ID = uuidv1();
+        const newToDoObject = {
+          [ID]: {
+            id: ID,
+            isCompleted: false,
+            text: newToDo,
+            createdAt: Date.now()
+          }
+        };
+        const newState = {
+          ...prevState,
+          newToDo: '',
+          toDos: {
+            ...prevState.toDos,
+            ...newToDoObject
+          }
+        };
+        return { ...newState };
+      });
+    }
+  };
+
+  _deleteToDo = id => {
+    this.setState(prevState => {
+      const toDos = prevState.toDos;
+      delete toDos[id];
+      const newState = {
+        ...prevState,
+        ...toDos
+      };
+      return { ...newState };
+    });
+  };
 }
 
 const styles = StyleSheet.create({
